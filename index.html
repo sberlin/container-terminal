@@ -23,7 +23,7 @@
 </head>
 <body ng-app="exampleApp">
 
-    <kubernetes-container-terminal pod="selfLink" container="containerName" prevent="preventSocket" rows="rows" cols="cols"  screen-keys="true" autofocus="true">
+    <kubernetes-container-terminal pod="selfLink" container="containerName" prevent="preventSocket" rows="rows" cols="cols"  screen-keys="true" autofocus="true" file="file">
     </kubernetes-container-terminal>
 
     <div>
@@ -50,7 +50,14 @@
         <label>
             <span>Cols</span>
             <input type="text" class="form-control" ng-model="cols"/>
-        </label>                
+        </label>
+    </div>
+    <div>
+        <label>
+            <span>File</span>
+            <input type="file" class="form-control" name="file"/>
+        </label>
+        <button type="button" ng-click="insertFile()">Insert File</button>
     </div>
 
     <script type="text/javascript">
@@ -65,6 +72,12 @@
                 $rootScope.containerName = "";
                 $rootScope.accessToken = "";
                 $rootScope.preventSocket = true;
+                $rootScope.insertFile = () => {
+                    var elem = document.getElementsByName("file")[0];
+                    if (elem.files[0]) {
+                        $rootScope.file = elem.files[0];
+                    }
+                };
             })
 
             /* Our custom WebSocket factory adapts the url */
