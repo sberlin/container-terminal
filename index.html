@@ -72,6 +72,8 @@
                 $rootScope.containerName = "";
                 $rootScope.accessToken = "";
                 $rootScope.preventSocket = true;
+                $rootScope.rows = 50;
+                $rootScope.cols = 250;
                 $rootScope.insertFile = () => {
                     var elem = document.getElementsByName("file")[0];
                     if (elem.files[0]) {
