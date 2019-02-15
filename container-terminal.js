@@ -84,7 +84,7 @@
                         screenKeys: '=?',
                         autofocus: '=?',
                         status: '=?',
-                        file: '=?'
+                        fileUpload: '=?'
                     },
                     link: function(scope, element, attrs) {
                         scope.status = 'disconnected';
@@ -275,11 +275,18 @@
                                 connect();
                         });
 
-                        scope.$watch("file", function(file) {
-                            if (file && term) {
+                        scope.$watch("fileUpload", function(fileUpload) {
+                            if (fileUpload && term) {
+                                const file = fileUpload.file;
+                                const chunkSize = fileUpload.chunkSize || 1000000;
+                                const chunkOffset = (fileUpload.chunkOffset || 0) * chunkSize;
                                 var reader = new FileReader();
                                 reader.onload = function(){
-                                    term.emit("data", reader.result);
+                                    const length = reader.result.length;
+                                    var chunkCount = Number.parseInt(length / chunkSize) + 1;
+                                    for (var i=chunkOffset; i<length; i+=chunkSize) {
+                                        term.emit("data", `echo -n -e >> /tmp/${file.name}-${i} "$(cat <<-EOC\n` + reader.result.slice(i, i+chunkSize) + "\nEOC\n)\"\n");
+                                    }
                                 };
                                 reader.readAsText(file);
                             }
