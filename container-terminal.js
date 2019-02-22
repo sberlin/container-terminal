@@ -83,8 +83,7 @@
                         cols: '=?',
                         screenKeys: '=?',
                         autofocus: '=?',
-                        status: '=?',
-                        file: '=?'
+                        status: '=?'
                     },
                     link: function(scope, element, attrs) {
                         scope.status = 'disconnected';
@@ -273,16 +272,6 @@
                         scope.$watch("prevent", function(prevent) {
                             if (!prevent)
                                 connect();
-                        });
-
-                        scope.$watch("file", function(file) {
-                            if (file && term) {
-                                var reader = new FileReader();
-                                reader.onload = function(){
-                                    term.emit("data", reader.result);
-                                };
-                                reader.readAsText(file);
-                            }
                         });
 
                         scope.$on("$destroy", function() {
