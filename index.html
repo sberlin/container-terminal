@@ -23,7 +23,7 @@
 </head>
 <body ng-app="exampleApp">
 
-    <kubernetes-container-terminal pod="selfLink" container="containerName" prevent="preventSocket" rows="rows" cols="cols"  screen-keys="true" autofocus="true" file-upload="fileUpload">
+    <kubernetes-container-terminal pod="selfLink" container="containerName" prevent="preventSocket" rows="rows" cols="cols"  screen-keys="true" autofocus="true" file="file">
     </kubernetes-container-terminal>
 
     <div>
@@ -57,14 +57,6 @@
             <span>File</span>
             <input type="file" class="form-control" name="file"/>
         </label>
-        <label>
-            <span>Chunk size</span>
-            <input type="number" min="0" class="form-control" ng-model="chunkSize"/>
-        </label>
-        <label>
-            <span>Chunk offset</span>
-            <input type="number" min="0" class="form-control" ng-model="chunkOffset"/>
-        </label>
         <button type="button" ng-click="insertFile()">Insert File</button>
     </div>
 
@@ -82,16 +74,10 @@
                 $rootScope.preventSocket = true;
                 $rootScope.rows = 50;
                 $rootScope.cols = 250;
-                $rootScope.chunkSize = 1000000;
-                $rootScope.chunkOffset = 0;
                 $rootScope.insertFile = () => {
                     var elem = document.getElementsByName("file")[0];
                     if (elem.files[0]) {
-                        $rootScope.fileUpload = {
-                            file: elem.files[0],
-                            chunkSize: $rootScope.chunkSize,
-                            chunkOffset: $rootScope.chunkOffset
-                        };
+                        $rootScope.file = elem.files[0];
                     }
                 };
             })
