@@ -1,0 +1,112 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta charset="utf-8">
+    <title>OpenShift File Upload</title>
+    <meta name="viewport" content="width=device-width">
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 20px !important; font-family: sans-serif; }
+        label { display: block !important; }
+        label span { float: left; width: 200px; margin-top: 2px; }
+        label .form-control { display: inline !important; width: 300px; }
+        body > div { margin-top: 15px; }
+        kubernetes-container-terminal { }
+    </style>
+    <link rel="stylesheet" href="bower_components/patternfly/dist/css/patternfly.css">
+    <link rel="stylesheet" href="bower_components/patternfly/dist/css/patternfly-additions.css">
+    <script src="bower_components/angular/angular.js"></script>
+</head>
+<body ng-app="ocFileUpload">
+    <div>
+        <label>
+            <span>Endpoint</span>
+            <input type="text" class="form-control" ng-model="baseUrl"/>
+        </label>
+        <label>
+            <span>Pod link</span>
+            <input type="text" class="form-control" ng-model="selfLink"/>
+        </label>
+        <label>
+            <span>Access Token</span>
+            <input type="text" class="form-control" ng-model="accessToken"/>
+        </label>
+        <label>
+            <span>Parameters</span>
+            <input type="text" class="form-control" ng-model="parameters"/>
+        </label>
+        <label>
+            <span>Command</span>
+            <input type="text" class="form-control" ng-model="command"/>
+        </label>
+    </div>
+    <div>
+        <label>
+            <span>File</span>
+            <input type="file" name="file"/>
+        </label>
+        <button type="button" ng-click="uploadFile()">Upload File</button>
+    </div>
+
+    <script type="text/javascript">
+        angular.module('ocFileUpload', [])
+            .run(function($rootScope) {
+                $rootScope.baseUrl = "ws://localhost:8080";
+                $rootScope.selfLink = "/api/v1/namespaces/default/pods/frontend-19kon";
+                $rootScope.containerName = "";
+                $rootScope.accessToken = "";
+                $rootScope.parameters = "stdout=1&stdin=1&stderr=1&tty=0&command=%2Fbin%2Fsh&command=-c"
+                $rootScope.command = "tee /tmp/dump"; //"psql -U userfoo -d dojo"
+                const getUrl = (baseUrl, selfLink, parameters, command, accessToken) => {
+                    var url = baseUrl + selfLink + '/exec?' + parameters
+                        + '&command=' + encodeURIComponent(command);
+                    if (accessToken) {
+                        url += "&access_token=" + accessToken;
+                    }
+                    return url;
+                }
+                $rootScope.uploadFile = () => {
+                    var isBinary = false;
+                    var elem = document.getElementsByName("file")[0];
+                    if (elem.files[0]) {
+                        const file = elem.files[0];
+                        const url = getUrl(
+                            $rootScope.baseUrl, $rootScope.selfLink, $rootScope.parameters,
+                            $rootScope.command, $rootScope.accessToken
+                        );
+                        const ws = new WebSocket(url, ["base64.channel.k8s.io"]);
+                        setInterval(() => {
+                            console.log("ws state", ws.readyState)
+                        }, 1000);
+                        ws.onmessage = (ev) => {
+                            if (!isBinary) {
+                                try {
+                                    const data = decodeURIComponent(escape(window.atob(ev.data.slice(1))));
+                                    switch(ev.data[0]) {
+                                        case '1':
+                                        case '2':
+                                        case '3':
+                                            console.log("data[0-100]", data.slice(0, 100), '...');
+                                            break;
+                                    }
+                                } catch (error) {
+                                    isBinary = true;
+                                    console.log('Not logging binary output any further');
+                                }
+                            }
+                        }
+                        ws.onopen = () => {
+                            var reader = new FileReader();
+                            reader.onload = function(){
+                                ws.send("0" + window.btoa(unescape(encodeURIComponent(reader.result))));
+                            };
+                            reader.readAsText(file, 'utf-8');
+                        };
+                    }
+                };
+            })
+
+    </script>
+
+</body>
+</html>
