@@ -119,3 +119,12 @@ Git clone this repo and run `grunt serve`. While the server is running, any time
 are made to the JS or HTML files the build will run automatically.  Before committing any
 changes run the `grunt build` task to make sure dist/container-terminal.js has been updated
 and include the updated file in your commit.
+
+File Uploads
+------------
+
+1. Navigate to `/upload.html`
+2. Change the parameters to point to your cluster, pod and file destination
+3. Choose a **text file** to upload, binary content is currently not supported
+4. Start upload and observe possible messages on browser console log
+
